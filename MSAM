@@ -1,0 +1,48 @@
+class MSAM(nn.Module):
+    def __init__(self, in_channels, reduction=16):
+        super(MSAM, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        temp = in_channels // 4
+        self.width = temp
+        self.nums = 4
+        self.fc = nn.Sequential(
+            nn.Linear(temp, temp // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(temp // reduction,temp, bias=False),
+            nn.Sigmoid(),
+        )
+        self.conv = nn.Conv2d(temp, temp, kernel_size=(3, 3), stride=1,padding=(1,1))
+
+
+
+    def forward(self, x):
+
+        spx = torch.split(x, self.width, 1)
+        sp0 = spx[0]
+        sp1 =self.conv(sp0 + spx[1])
+        sp2 =self.conv(sp1 + spx[2])
+        sp3 = self.conv(sp2 + spx[3])
+        
+        b0, c0, _, _ = sp0.size()
+        out0 = torch.mul(sp0,self.fc(self.avg_pool(sp0).view(b0, c0)).view(b0, c0, 1, 1))
+        out0_ = torch.mul(sp0, self.fc(self.max_pool(sp0).view(b0, c0)).view(b0, c0, 1, 1))
+        out0 = out0 + out0_
+
+        b1, c1, _, _ = sp1.size()
+        out1 = torch.mul(sp1, self.fc(self.avg_pool(sp1).view(b1, c1)).view(b1, c1, 1, 1))
+        out1_ = torch.mul(sp1, self.fc(self.max_pool(sp1).view(b1, c1)).view(b1, c1, 1, 1))
+        out1 = out1_ + out1
+
+        b2, c2, _, _ = sp2.size()
+        out2 = torch.mul(sp2, self.fc(self.avg_pool(sp2).view(b2, c2)).view(b2, c2, 1, 1))
+        out2_ = torch.mul(sp2, self.fc(self.max_pool(sp2).view(b2, c2)).view(b2, c2, 1, 1))
+        out2 = out2_ + out2
+
+        b3, c3, _, _ = sp3.size()
+        out3 = torch.mul(sp3, self.fc(self.avg_pool(sp3).view(b3, c3)).view(b3, c3, 1, 1))
+        out3_ = torch.mul(sp3, self.fc(self.max_pool(sp3).view(b3, c3)).view(b3, c3, 1, 1))
+        out3 = out3_ + out3
+        
+        out = torch.cat((out0, out1, out2, out3), 1)
+        return out
