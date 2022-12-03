@@ -1,20 +1,18 @@
 class ACP(nn.Module):
     def __init__(self, in_channel, depth):
         super(ACP, self).__init__()
-        self.atrous_block1 = nn.Conv2d(in_channel, depth, 1, 1)
         # 不同空洞率的卷积
-        self.atrous_block2 = nn.Conv2d(in_channel, depth, 3, 1, padding=1, dilation=1)
-        self.atrous_block3= nn.Conv2d(in_channel, depth, 3, 1, padding=2, dilation=2)
-        self.atrous_block4 = nn.Conv2d(in_channel, depth, 3, 1, padding=4, dilation=4)
-        self.conv_1x1_output = nn.Conv2d(depth * 4, depth, 1, 1)
+        self.atrous_block1 = nn.Conv2d(in_channel, depth, 3, 1, padding=1, dilation=1)
+        self.atrous_block2= nn.Conv2d(in_channel, depth, 3, 1, padding=2, dilation=2)
+        self.atrous_block3 = nn.Conv2d(in_channel, depth, 3, 1, padding=4, dilation=4)
+        self.conv_1x1_output = nn.Conv2d(depth * 3, depth, 1, 1)
 
     def forward(self, x):
         # 不同空洞率的卷积
         atrous_block1 = self.atrous_block1(x)
         atrous_block2 = self.atrous_block2(x)
         atrous_block3 = self.atrous_block3(x)
-        atrous_block4 = self.atrous_block4(x)
         # 汇合所有尺度的特征
-        x = torch.cat([ atrous_block1, atrous_block2, atrous_block3,atrous_block4 ], dim=1)
+        x = torch.cat([ atrous_block1, atrous_block2, atrous_block3 ], dim=1)
         x = self.conv_1x1_output(x)
         return x
