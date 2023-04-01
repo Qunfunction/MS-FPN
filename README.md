@@ -17,5 +17,5 @@ classical and recently developed deep learning models, using the high-resolution
 (HRSID) that contains multi-scale marine ship SAR images, demonstrated the superior performance
 of MS-FPN over other models.
 # Citation
-##If you use this toolbox or benchmark in your research, please cite this project.
+## If you use this toolbox or benchmark in your research, please cite this project.
 Sun, Z.; Meng, C.; Cheng, J.; Zhang, Z.; Chang, S. A Multi-Scale Feature Pyramid Network for Detection and Instance Segmentation of Marine Ships in SAR Images. Remote Sens. 2022, 14(24), 6312.
